@@ -1,6 +1,5 @@
 import React from 'react'
 import { Container, Row, Col, Card, Image } from 'react-bootstrap';
-
 class ProductTable extends React.Component {
     constructor(props) {
         super(props)
@@ -9,28 +8,55 @@ class ProductTable extends React.Component {
             error: null,
             isLoaded: false,
             items: [],
-            status: true
+            status: true,
+            brandName: false,
+            productName: false,
+            compar: ""
         }
         this.onSubmitHandler = this.onSubmitHandler.bind(this)
         this.notSubmit = this.notSubmit.bind(this)
+        this.handleInputChange = this.handleInputChange.bind(this);
 
     }
+
+
 
     load(url) {
         fetch(url)
             .then(res => res.json())
             .then(
                 (result) => {
-                    this.setState({
-                        isLoaded: true,
-                        items: result
-                    });
+                    if (this.state.productName) {
+                        let resulted = {}
+                        result.map(
+                            i =>
+                                this.state.compar === i.name.toLowerCase() ?
+                                    resulted = i : i
+                        )
+
+                        this.setState({
+                            isLoaded: true,
+                            items: Object.keys(resulted).length === 0 ? [] : [resulted],
+                            brandName: false,
+                            productName: false,
+
+                        })
+
+                    } else {
+                        this.setState({
+                            isLoaded: true,
+                            items: result,
+                            brandName: false,
+                            productName: false,
+                        })
+                    }
+
                 },
 
                 (error) => {
                     this.setState({
                         isLoaded: true,
-                        error
+                        error,
                     });
                 }
             )
@@ -44,8 +70,19 @@ class ProductTable extends React.Component {
         this.setState({
             status: false,
         });
-        const url = "http://makeup-api.herokuapp.com/api/v1/products.json?brand=" + this.newBrand.value.trim().toLowerCase() + "&product_type=" + this.newProduct.value
-        console.log(url)
+        let url = ""
+        if (this.newProduct.value !== "null") {
+            url = "http://makeup-api.herokuapp.com/api/v1/products.json?brand=" + this.newBrand.value.trim().toLowerCase() + "&product_type=" + this.newProduct.value
+        } else if (this.state.brandName) {
+            url = "http://makeup-api.herokuapp.com/api/v1/products.json?brand=" + this.newBrand.value.trim().toLowerCase()
+        } else if (this.state.productName) {
+            console.log("entrou")
+            url = "http://makeup-api.herokuapp.com/api/v1/products.json"
+
+            this.setState({
+                compar: this.newBrand.value.trim().toLowerCase()
+            })
+        }
         this.load(url)
     }
 
@@ -53,21 +90,44 @@ class ProductTable extends React.Component {
         event.preventDefault()
     }
 
+    handleInputChange(event) {
+        const target = event.target;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const name = target.name;
+        if (name === "productName") {
+            this.setState({
+                productName: value,
+                brandName: false
+            });
+        } else {
+            this.setState({
+                productName: false,
+                brandName: value
+            });
+        }
+    }
+
+
+
     render() {
         const { status, isLoaded, items } = this.state;
+
+
         if (status) {
             return <div>
                 <form>
                     <div className="mb-3">
-                        <label htmlFor="search" className="form-label">Search Brads</label>
+                        <label htmlFor="search" className="form-label">Search</label>
                         <Container>
                             <Row>
                                 <Col>
-                                    <input ref={(c) => this.newBrand = c} type="text" className="form-control col" id="search" placeholder="Search..." />
+                                    <input ref={(c) => this.newBrand = c} type="text"
+                                        className="form-control" id="search" placeholder="Search..." />
                                 </Col>
                                 <Col>
-                                    <select ref={(j) => this.newProduct = j} className="form-select col" aria-label="Default select example">
-                                        <option selected>Open this select menu</option>
+                                    <select ref={(j) => this.newProduct = j} className="form-select col"
+                                        aria-label="Default select example">
+                                        <option selected value="null">Open this select menu</option>
                                         <option value="blush">Blush</option>
                                         <option value="bronzer">Bronzer</option>
                                         <option value="eyebrow">Eyebrow</option>
@@ -81,6 +141,28 @@ class ProductTable extends React.Component {
                                     </select>
                                 </Col>
                             </Row>
+
+
+                            <div style={{ marginTop: 5 }}>
+                                <label style={{ marginRight: 10 }} htmlFor="brandName" className="form-label">Brand Name</label>
+                                <input id="brandName"
+                                    name="brandName"
+                                    type="checkbox"
+                                    checked={this.state.brandName}
+                                    onChange={this.handleInputChange} />
+
+                            </div>
+                            <div>
+
+                                <label style={{ marginRight: 10 }} htmlFor="productName" className="form-label">Product Name</label>
+                                <input id="productName"
+                                    name="productName"
+                                    type="checkbox"
+                                    checked={this.state.productName}
+                                    onChange={this.handleInputChange} />
+                            </div>
+
+
                         </Container>
                     </div>
 
@@ -101,15 +183,17 @@ class ProductTable extends React.Component {
                     <>
                         <form>
                             <div className="mb-3">
-                                <label htmlFor="search" className="form-label">Search Brads</label>
+                                <label htmlFor="search" className="form-label">Search</label>
                                 <Container>
                                     <Row>
                                         <Col>
-                                            <input ref={(c) => this.newBrand = c} type="text" className="form-control" id="search" placeholder="Search..." />
+                                            <input ref={(c) => this.newBrand = c} type="text"
+                                                className="form-control" id="search" placeholder="Search..." />
                                         </Col>
                                         <Col>
-                                            <select ref={(j) => this.newProduct = j} className="form-select col" aria-label="Default select example">
-                                                <option selected>Open this select menu</option>
+                                            <select ref={(j) => this.newProduct = j} className="form-select col"
+                                                aria-label="Default select example">
+                                                <option selected value="null">Open this select menu</option>
                                                 <option value="blush">Blush</option>
                                                 <option value="bronzer">Bronzer</option>
                                                 <option value="eyebrow">Eyebrow</option>
@@ -123,6 +207,28 @@ class ProductTable extends React.Component {
                                             </select>
                                         </Col>
                                     </Row>
+
+
+                                    <div style={{ marginTop: 5 }}>
+                                        <label style={{ marginRight: 10 }} htmlFor="brandName" className="form-label">Brand Name</label>
+                                        <input id="brandName"
+                                            name="brandName"
+                                            type="checkbox"
+                                            checked={this.state.brandName}
+                                            onChange={this.handleInputChange} />
+
+                                    </div>
+                                    <div>
+
+                                        <label style={{ marginRight: 10 }} htmlFor="productName" className="form-label">Product Name</label>
+                                        <input id="productName"
+                                            name="productName"
+                                            type="checkbox"
+                                            checked={this.state.productName}
+                                            onChange={this.handleInputChange} />
+                                    </div>
+
+
                                 </Container>
                             </div>
                             <button onClick={this.onSubmitHandler} type="submit" className="btn btn-primary">Search</button>
@@ -139,15 +245,17 @@ class ProductTable extends React.Component {
                     <>
                         <form>
                             <div className="mb-3">
-                                <label htmlFor="search" className="form-label">Search Brads</label>
+                                <label htmlFor="search" className="form-label">Search</label>
                                 <Container>
                                     <Row>
                                         <Col>
-                                            <input ref={(c) => this.newBrand = c} type="text" className="form-control" id="search" placeholder="Search..." />
+                                            <input ref={(c) => this.newBrand = c} type="text"
+                                                className="form-control" id="search" placeholder="Search..." />
                                         </Col>
                                         <Col>
-                                            <select ref={(j) => this.newProduct = j} className="form-select col" aria-label="Default select example">
-                                                <option selected>Open this select menu</option>
+                                            <select ref={(j) => this.newProduct = j}
+                                                className="form-select col" aria-label="Default select example">
+                                                <option selected value="null">Open this select menu</option>
                                                 <option value="blush">Blush</option>
                                                 <option value="bronzer">Bronzer</option>
                                                 <option value="eyebrow">Eyebrow</option>
@@ -161,9 +269,32 @@ class ProductTable extends React.Component {
                                             </select>
                                         </Col>
                                     </Row>
+
+                                    <div style={{ marginTop: 5 }}>
+                                        <label style={{ marginRight: 10 }} htmlFor="brandName" className="form-label">Brand Name</label>
+                                        <input id="brandName"
+                                            name="brandName"
+                                            type="checkbox"
+                                            checked={this.state.brandName}
+                                            onChange={this.handleInputChange} />
+
+                                    </div>
+                                    <div>
+
+                                        <label style={{ marginRight: 10 }} htmlFor="productName" className="form-label">Product Name</label>
+                                        <input id="productName"
+                                            name="productName"
+                                            type="checkbox"
+                                            checked={this.state.productName}
+                                            onChange={this.handleInputChange} />
+                                    </div>
+
+
                                 </Container>
+
                             </div>
-                            <button onClick={this.onSubmitHandler} type="submit" className="btn btn-primary">Search</button>
+                            <button onClick={this.onSubmitHandler} type="submit"
+                                className="btn btn-primary">Search</button>
                         </form>
                         <br></br>
 
@@ -193,8 +324,10 @@ class ProductTable extends React.Component {
                 )
             }
         }
+
     }
 
 }
 
 export default ProductTable
+
