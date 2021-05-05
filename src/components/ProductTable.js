@@ -1,5 +1,6 @@
 import React from 'react'
 import { Container, Row, Col, Card, Image } from 'react-bootstrap';
+import loading from '../assets/Bean Eater-1s-450px.gif'
 class ProductTable extends React.Component {
     constructor(props) {
         super(props)
@@ -107,12 +108,8 @@ class ProductTable extends React.Component {
         }
     }
 
-
-
     render() {
         const { status, isLoaded, items } = this.state;
-
-
         if (status) {
             return <div>
                 <form>
@@ -174,7 +171,12 @@ class ProductTable extends React.Component {
 
             return (
                 <>
-                    <div>Loading...</div>
+                    <div>
+                        <center>
+                            <h1>Loading...</h1>
+                            <Image src={loading}></Image>
+                        </center>
+                    </div>
                 </>
             );
         } else {
@@ -330,4 +332,3 @@ class ProductTable extends React.Component {
 }
 
 export default ProductTable
-
